@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لولو وضمائر الغائب</title>
+<style>
+:root{--purple:#7357d8;--purple2:#efeaff;--teal:#1ca89b;--yellow:#ffd45c;--ink:#243047;--muted:#667085;--pink:#ffedf2}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#e8f8ff,#fff7dc 55%,#f8eaff);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+.app{width:min(760px,100%);background:#fff;border:4px solid #fff;border-radius:28px;box-shadow:0 18px 55px #26345b20;overflow:hidden}
+.top{padding:22px 24px 16px;text-align:center;background:linear-gradient(120deg,#dff8ff,#f0eaff)}
+h1{margin:0;font-size:clamp(1.7rem,5vw,2.5rem);color:#563cb6}
+.sub{margin:8px 0 0;color:#536078}
+.progress-wrap{height:9px;background:#e9eaf2}
+.progress{height:100%;width:0;background:linear-gradient(90deg,#24b8a9,#8c6ef0);transition:width .25s}
+.content{padding:clamp(16px,4vw,30px)}
+.welcome{text-align:center}
+.mascot{width:112px;height:112px;margin:0 auto 8px;border-radius:50%;background:#dff8ec;display:grid;place-items:center;font-size:72px;border:4px solid white;box-shadow:0 4px 0 #b5e9d6}
+.speech{background:#f5f1ff;border-radius:18px;padding:14px;margin:14px auto;max-width:520px;font-size:1.15rem;line-height:1.7}
+button{font:inherit;cursor:pointer;border:0;border-radius:15px;padding:13px 18px;transition:transform .12s,box-shadow .12s}
+button:focus-visible{outline:3px solid #222;outline-offset:3px}
+button:active{transform:scale(.98)}
+.primary{background:var(--purple);color:white;font-weight:bold;box-shadow:0 4px 0 #5036aa}
+.primary:hover{background:#6045c5}
+.secondary{background:#f0f2f8;color:var(--ink)}
+.question-head{display:flex;justify-content:space-between;gap:10px;align-items:center;color:var(--muted);font-size:.95rem}
+.pill{background:#f0ecff;color:#5d45b5;border-radius:99px;padding:7px 12px;font-weight:bold}
+.scene{min-height:155px;border-radius:22px;background:linear-gradient(135deg,#f0fbff,#fff3d9);display:flex;align-items:center;justify-content:center;gap:18px;margin:18px 0;padding:18px;flex-wrap:wrap}
+.people{font-size:clamp(2.5rem,9vw,4.4rem);letter-spacing:3px;filter:drop-shadow(0 4px 2px #00000010)}
+.scene-label{font-size:1.1rem;font-weight:bold;text-align:center;max-width:240px;line-height:1.6}
+.prompt{text-align:center;font-size:1.25rem;font-weight:bold;margin:12px 0 16px}
+.answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.answer{background:#fff;border:2px solid #dcd7f7;color:#493a8d;font-size:1.2rem;font-weight:bold;min-height:58px;box-shadow:0 3px 0 #e9e4ff}
+.answer:hover{background:#f6f3ff;border-color:#9b88ee}
+.answer:disabled{cursor:default;opacity:.85}
+.feedback{margin-top:16px;padding:13px 16px;border-radius:16px;text-align:center;font-weight:bold;line-height:1.6;display:none}
+.feedback.good{display:block;background:#e5f9ef;color:#146c4c}
+.feedback.try{display:block;background:#fff1db;color:#865500}
+.controls{display:flex;justify-content:center;margin-top:16px;gap:10px;flex-wrap:wrap}
+.result{text-align:center}
+.big-score{font-size:2.2rem;color:#563cb6;font-weight:bold;margin:12px}
+.small{color:var(--muted);font-size:.9rem;line-height:1.6}
+footer{text-align:center;color:#8790a2;font-size:.8rem;padding:0 16px 18px}
+@media(max-width:480px){.answers{grid-template-columns:repeat(2,minmax(0,1fr))}.answer:last-child{grid-column:1/-1}.top{padding:18px}.scene{gap:8px}}
+</style>
+</head>
+<body>
+<main class="app" aria-live="polite">
+  <header class="top">
+    <h1>🦜 لولو وضمائر الغائب</h1>
+    <p class="sub">يلا نفكر ونختار الضمير الصحيح!</p>
+  </header>
+  <div class="progress-wrap" aria-label="تقدم اللعبة"><div class="progress" id="progress"></div></div>
+  <section class="content" id="content">
+    <div class="welcome">
+      <div class="mascot" aria-hidden="true">🦜</div>
+      <div class="speech">أهلًا يا أصدقائي! أنا لولو. هنعرف مع بعض إمتى نقول: <strong>هو، هي، هما، هم، هن</strong>.</div>
+      <p>خمس جولات قصيرة. اختار الإجابة المناسبة للصورة، ولو أخطأت تقدر تحاول مرة تانية.</p>
+      <button class="primary" id="start">يلا نبدأ! ⭐</button>
+    </div>
+  </section>
+  <footer>لعبة تعليمية تجريبية — لا تجمع أسماء أو بيانات شخصية.</footer>
+</main>
+<script>
+const questions = [
+ {label:"ولد واحد", picture:"👦", prompt:"مين في الصورة؟", options:["هو","هي","هما"], answer:"هو", explain:"ممتاز! نقول «هو» عند الحديث عن ولد واحد."},
+ {label:"بنت واحدة", picture:"👧", prompt:"مين في الصورة؟", options:["هم","هي","هن"], answer:"هي", explain:"برافو! نقول «هي» عند الحديث عن بنت واحدة."},
+ {label:"طفلان", picture:"👦 👧", prompt:"نتكلم عن الطفلين معًا. نختار إيه؟", options:["هو","هما","هم"], answer:"هما", explain:"رائع! «هما» تُستخدم للمثنى، للمذكر أو المؤنث."},
+ {label:"مجموعة أولاد", picture:"👦 👦 👦", prompt:"مين في الصورة؟", options:["هن","هم","هي"], answer:"هم", explain:"أحسنت! «هم» لجماعة الذكور أو جماعة مختلطة."},
+ {label:"مجموعة بنات", picture:"👧 👧 👧", prompt:"مين في الصورة؟", options:["هما","هم","هن"], answer:"هن", explain:"ممتاز جدًا! «هن» لجماعة الإناث."}
+];
+let index=0, score=0, answered=false;
+const content=document.getElementById("content"), progress=document.getElementById("progress");
+document.getElementById("start").addEventListener("click",()=>{index=0;score=0;renderQuestion()});
+function renderQuestion(){
+ answered=false; progress.style.width=(index/questions.length*100)+"%";
+ const q=questions[index];
+ content.innerHTML=`<div class="question-head"><span>الجولة ${index+1} من ${questions.length}</span><span class="pill">⭐ النقاط: ${score}</span></div>
+ <div class="scene"><div class="people" role="img" aria-label="${q.label}">${q.picture}</div><div class="scene-label">${q.label}</div></div>
+ <div class="prompt">${q.prompt}</div>
+ <div class="answers">${q.options.map(opt=>`<button class="answer" data-answer="${opt}">${opt}</button>`).join("")}</div>
+ <div class="feedback" id="feedback" role="status"></div>
+ <div class="controls" id="controls"></div>`;
+ content.querySelectorAll(".answer").forEach(btn=>btn.addEventListener("click",()=>choose(btn.dataset.answer,btn)));
+}
+function choose(answer,button){
+ if(answered)return;
+ const q=questions[index], feedback=document.getElementById("feedback");
+ if(answer===q.answer){
+   answered=true;score++;feedback.className="feedback good";feedback.textContent="🎉 "+q.explain;
+   content.querySelectorAll(".answer").forEach(b=>b.disabled=true);
+   const controls=document.getElementById("controls");
+   const next=document.createElement("button");next.className="primary";next.textContent=index===questions.length-1?"عرض النتيجة 🏆":"السؤال التالي ←";
+   next.addEventListener("click",()=>{index++;if(index<questions.length)renderQuestion();else renderResult()});controls.appendChild(next);
+ } else {
+   feedback.className="feedback try";feedback.textContent="قريب جدًا! جرّب مرة تانية يا بطل 💛";
+   button.style.borderColor="#e7a43b";button.style.background="#fff6e8";
+ }
+}
+function renderResult(){
+ progress.style.width="100%";
+ const message=score===5?"رائع! أنت بطل الضمائر! 🏆":score>=3?"أحسنت! أنت تتعلم بسرعة. جرّب مرة أخرى لتحصل على الدرجة الكاملة! 🌟":"بداية جميلة! العب مرة أخرى وتعلّم مع لولو. 💚";
+ content.innerHTML=`<div class="result"><div class="mascot" aria-hidden="true">🦜</div><h2>خلصنا اللعبة! 🎉</h2><div class="big-score">${score} من ${questions.length}</div><div class="speech">${message}</div><button class="primary" id="again">نلعب من جديد 🔄</button><p class="small">تذكّر: هو للمفرد المذكر، هي للمفرد المؤنث، هما للمثنى، هم لجماعة الذكور أو الجماعة المختلطة، وهن لجماعة الإناث.</p></div>`;
+ document.getElementById("again").addEventListener("click",()=>{index=0;score=0;renderQuestion()});
+}
+</script>
+</body>
+</html>
